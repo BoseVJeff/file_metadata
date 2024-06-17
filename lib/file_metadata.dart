@@ -4,5 +4,6 @@
 library;
 
 export 'src/file_metadata_base.dart';
+export 'gguf.dart';
 
 // TODO: Export any libraries intended for clients of this package.
