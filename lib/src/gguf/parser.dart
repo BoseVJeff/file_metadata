@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'gguf_metadata_value_types.dart';
 
@@ -45,7 +44,6 @@ class Parser {
 
   static Future<String> getUtf8String(RandomAccessFile file) async {
     int length = (await file.read(8)).buffer.asUint64List().first;
-    // print("Value length $length");
     return utf8.decode(await file.read(length));
   }
 
@@ -60,13 +58,7 @@ class Parser {
     switch (type) {
       case GgufMetadataValueType.GGUF_METADATA_VALUE_TYPE_STRING:
         for (int j = 0; j < length; j++) {
-          // int stringLength = (await file.read(8)).buffer.asUint64List().first;
-          // Uint8List stringBytes = await file.read(stringLength);
-          // var decode = utf8.decode(stringBytes);
-          // print(decode);
-          // arr.add(decode);
           String value = await Parser.getUtf8String(file);
-          // print(value);
           arr.add(value);
         }
         break;
@@ -134,46 +126,5 @@ class Parser {
     }
 
     return arr;
-
-    // throw UnimplementedError("Array is not implemented!");
-  }
-}
-
-extension AlignPosition on RandomAccessFile {
-  /// Get the next aligned position with the mentioned alignment (in Bytes).
-  ///
-  /// The formula is ripped straight from the docs at https://github.com/ggerganov/ggml/blob/master/docs/gguf.md#file-structure
-  Future<void> alignPosition([int alignment = 8]) async {
-    int offset = await position();
-    await setPosition(offset + (alignment - (offset % alignment)) % alignment);
-    // print(
-    //   "${offset.toRadixString(16)} --> ${(await position()).toRadixString(16)}",
-    // );
-    return;
-  }
-
-  /// Get the next aligned position with the mentioned alignment (in Bytes).
-  ///
-  /// The formula is ripped straight from the docs at https://github.com/ggerganov/ggml/blob/master/docs/gguf.md#file-structure
-  void alignPositionSync([int alignment = 8]) {
-    int offset = positionSync();
-    setPositionSync(offset + (alignment - (offset % alignment)) % alignment);
-    return;
-  }
-
-  /// Read untill a specific byte is encountered
-  ///
-  /// Does not include the excluded bytes in the returned result.
-  Future<Uint8List> readUntill(int stopByte) async {
-    List<int> bytes = [];
-    while (true) {
-      int byte = (await read(1)).first;
-      // print(byte);
-      if (byte == stopByte) {
-        break;
-      }
-      bytes.add(byte);
-    }
-    return Uint8List.fromList(bytes);
   }
 }

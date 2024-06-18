@@ -1,4 +1,5 @@
 import 'package:file_metadata/file_metadata.dart';
+import 'package:file_metadata/src/gguf/file_type.dart';
 
 import 'tensor_types.dart';
 
@@ -37,6 +38,15 @@ class GgufFileMetadata implements FileDataMetadata {
   ///
   /// Note that the offsets are from `tensor_data` as mentioned in the docs.
   final List<Tensor> tensors;
+
+  /// The file type.
+  ///
+  /// This is an indicator of what type of data the file usually contains.
+  ///
+  /// For a list of all possible file types, look at the values of [FileType].
+  FileType get fileType => FileType.fromId(
+        (kvPairs["general.file_type"] as int?) ?? -1,
+      );
 
   const GgufFileMetadata(
     this.magicString,

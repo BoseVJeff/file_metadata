@@ -93,25 +93,12 @@ class GgufMetadata extends FileMetadataBase {
       int alignment = 8;
 
       for (var i = 0; i < metadataKvCount; i++) {
-        // for (var i = 0; i < 3; i++) {
-        // print("KV $i");
-        // print("Initial Position: ${await randomAccessFile.position()}");
-        // await randomAccessFile.setPosition(
-        //   getNextAlignedPosition(
-        //     await randomAccessFile.position(),
-        //   ),
-        // );
-        // print("Aligned Position: ${await randomAccessFile.position()}");
         // Get length of the key string
         bytes = await randomAccessFile.read(8);
         int keyLength = bytes.buffer.asUint64List().first;
         // print("Key length $keyLength");
         bytes = await randomAccessFile.read(keyLength);
         String key = utf8.decode(bytes);
-        // TODO: Stop at key=tokenizer.ggml.tokens as we can't parse this for now
-        if (key == "tokenizer.ggml.tokens") {
-          // break;
-        }
         print(
           "Key: $key at ${randomAccessFile.positionSync().toRadixString(16)}",
         );
@@ -119,11 +106,7 @@ class GgufMetadata extends FileMetadataBase {
         bytes = await randomAccessFile.read(4);
         int typeId = bytes.buffer.asUint32List().first;
         GgufMetadataValueType type = GgufMetadataValueType.fromId(typeId);
-        // TODO: Make parser for each type of data
-        // Preferably, do this by sending the bytes over to a static function that returns the appropriate data.
-        // print("Value position: ${await randomAccessFile.position()}");
         Object value;
-        // print("Metadata value type: ${type.name}");
         switch (type) {
           case GgufMetadataValueType.GGUF_METADATA_VALUE_TYPE_UINT8:
             value = await Parser.getUint8Value(randomAccessFile);
