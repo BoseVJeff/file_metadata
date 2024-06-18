@@ -41,7 +41,18 @@ abstract class FileMetadataBase {
   /// Get all metadata possible from the filename itself.
   ///
   /// This does not attempt to open/read the file.
+  ///
+  /// In order to get a more exhaustive list of metadata, use [FileMetadataBase.getMetadataFromFile] instead.
   FilenameMetadata getMetadataFromPath();
+
+  /// Get all metadata from the file.
+  ///
+  /// This will attempt to open and read the file.
+  ///
+  /// If this is undesireable, use [FileMetadataBase.getMetadataFromPath] instead.
+  Future<FileDataMetadata> getMetadataFromFile();
 }
 
 abstract class FilenameMetadata {}
+
+abstract class FileDataMetadata {}
