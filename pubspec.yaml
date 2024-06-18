@@ -1,7 +1,7 @@
 name: file_metadata
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: A package to get metadata for various file types.
+version: 0.0.1
+repository: https://github.com/BoseVJeff/file_metadata
 
 environment:
   sdk: ^3.4.0
