@@ -1,5 +1,5 @@
-import 'package:file_metadata/file_metadata.dart';
-import 'package:file_metadata/src/gguf/file_type.dart';
+import '../file_metadata_base.dart';
+import 'file_type.dart';
 
 import 'tensor_types.dart';
 

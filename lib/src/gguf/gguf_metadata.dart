@@ -99,9 +99,10 @@ class GgufMetadata extends FileMetadataBase {
         // print("Key length $keyLength");
         bytes = await randomAccessFile.read(keyLength);
         String key = utf8.decode(bytes);
-        print(
-          "Key: $key at ${randomAccessFile.positionSync().toRadixString(16)}",
-        );
+        // TODO: Add this print alongwith all of the other prints into a logger instead.
+        // print(
+        //   "Key: $key at ${randomAccessFile.positionSync().toRadixString(16)}",
+        // );
         // Get type of value
         bytes = await randomAccessFile.read(4);
         int typeId = bytes.buffer.asUint32List().first;
@@ -153,7 +154,7 @@ class GgufMetadata extends FileMetadataBase {
       alignment = (kvPairs["general.alignment"] as int?) ?? 8;
 
       // Next section contains information about all tensors and their offsets in the file
-      print("Getting tensor info...");
+      //   print("Getting tensor info...");
       for (int k = 0; k < tensorCount; k++) {
         String name = await Parser.getUtf8String(randomAccessFile);
         int dimensionCount = await Parser.getUint32Value(randomAccessFile);
@@ -170,7 +171,7 @@ class GgufMetadata extends FileMetadataBase {
           Tensor(name, dimensionCount, dimensions, tensorType, offset),
         );
       }
-      print("End of tensor position: ${randomAccessFile.positionSync()}");
+      //   print("End of tensor position: ${randomAccessFile.positionSync()}");
       // B40CB(HEX) for phi-3-mini-4k-instruct-q_4
       // 1302743(DEC) for deepseek-coder-6.7b-instruct
       // 6042510(DEC) for gemma-2b-it-q8_0
