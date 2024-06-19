@@ -179,5 +179,56 @@ void main() {
         equals(32064),
       );
     });
+
+    test('BoS Token', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.bos_token_id"] as int),
+        equals(1),
+      );
+    });
+
+    test('EoS Token', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.eos_token_id"] as int),
+        equals(32000),
+      );
+    });
+
+    test('Unknown Token', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.unknown_token_id"] as int),
+        equals(0),
+      );
+    });
+
+    test('Padding Token', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.padding_token_id"] as int),
+        equals(32000),
+      );
+    });
+
+    test('Add BoS Token?', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.add_bos_token"] as bool),
+        isTrue,
+      );
+    });
+
+    test('Add EoS Token?', () {
+      expect(
+        (metadata.kvPairs["tokenizer.ggml.add_eos_token"] as bool),
+        isFalse,
+      );
+    });
+
+    test('Chat Template', () {
+      expect(
+        (metadata.kvPairs["tokenizer.chat_template"] as String),
+        equals(
+          "{{ bos_token }}{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|user|>' + '\n' + message['content'] + '<|end|>' + '\n' + '<|assistant|>' + '\n'}}{% elif (message['role'] == 'assistant') %}{{message['content'] + '<|end|>' + '\n'}}{% endif %}{% endfor %}",
+        ),
+      );
+    });
   });
 }
