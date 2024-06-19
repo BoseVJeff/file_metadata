@@ -17,6 +17,9 @@ void main() {
       expect(metadata.encodingScheme, equals("Q2_K"));
       expect(metadata.shardIndex, isNull);
       expect(metadata.shardTotal, isNull);
+
+      expect(metadata.fileName, equals("Mixtral-v0.1-8x7B-Q2_K"));
+      expect(metadata.fileExtension, equals("gguf"));
     });
     test('Grok', () {
       const String modelName = "Grok-v1.0-100B-Q4_0-00003-of-00009.gguf";
@@ -30,6 +33,9 @@ void main() {
       expect(metadata.encodingScheme, equals("Q4_0"));
       expect(metadata.shardIndex, equals(3));
       expect(metadata.shardTotal, equals(9));
+
+      expect(metadata.fileName, equals("Grok-v1.0-100B-Q4_0-00003-of-00009"));
+      expect(metadata.fileExtension, equals("gguf"));
     });
     test('Hermes', () {
       const String modelName = "Hermes-2-Pro-Llama-3-8B-F16.gguf";
@@ -43,6 +49,9 @@ void main() {
       expect(metadata.encodingScheme, equals("F16"));
       expect(metadata.shardIndex, isNull);
       expect(metadata.shardTotal, isNull);
+
+      expect(metadata.fileName, equals("Hermes-2-Pro-Llama-3-8B-F16"));
+      expect(metadata.fileExtension, equals("gguf"));
     });
     test('Malformed Name', () {
       const String modelName = "not-a-known-arrangement.gguf";
@@ -56,6 +65,9 @@ void main() {
       expect(metadata.encodingScheme, equals(""));
       expect(metadata.shardIndex, isNull);
       expect(metadata.shardTotal, isNull);
+
+      expect(metadata.fileName, equals("not-a-known-arrangement"));
+      expect(metadata.fileExtension, equals("gguf"));
     });
   });
 

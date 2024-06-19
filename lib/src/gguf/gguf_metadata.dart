@@ -53,6 +53,7 @@ class GgufMetadata extends FileMetadataBase {
     );
 
     return GgufFilenameMetdata(
+      filename,
       modelName,
       majorVersion,
       minorVersion,

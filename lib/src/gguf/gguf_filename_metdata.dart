@@ -1,6 +1,9 @@
 import 'package:file_metadata/src/file_metadata_base.dart';
 
 class GgufFilenameMetdata implements FilenameMetadata {
+  /// Full filename
+  final String _fullFilename;
+
   /// Model Name as infered from filename.
   ///
   /// This is an empty string of no model can be infered.
@@ -48,6 +51,7 @@ class GgufFilenameMetdata implements FilenameMetadata {
   ///
   /// This is typically obtained as a product of
   const GgufFilenameMetdata(
+    this._fullFilename,
     this.modelName,
     this.majorVersion,
     this.minorVersion,
@@ -62,4 +66,14 @@ class GgufFilenameMetdata implements FilenameMetadata {
   ///
   /// Note that this property must only be accessed AFTER calling [GgmlMetadata.parseFilename].
   String get version => "v$majorVersion.$minorVersion";
+
+  @override
+  String get fileExtension => "gguf";
+
+  @override
+  String get fileName {
+    List<String> parts = _fullFilename.split(".");
+    parts.removeLast();
+    return parts.join(".");
+  }
 }

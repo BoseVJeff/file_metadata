@@ -53,6 +53,10 @@ abstract class FileMetadataBase {
   Future<FileDataMetadata> getMetadataFromFile();
 }
 
-abstract class FilenameMetadata {}
+abstract class FilenameMetadata {
+  String get fileName => throw UnimplementedError();
+
+  String get fileExtension => throw UnimplementedError();
+}
 
 abstract class FileDataMetadata {}
