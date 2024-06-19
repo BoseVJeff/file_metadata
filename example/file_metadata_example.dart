@@ -6,7 +6,8 @@ import 'package:file_metadata/file_metadata.dart';
 void main() async {
   // Reading data from a GGUF file
   GgufMetadata ggufMetadata = GgufMetadata(
-    File("test/deepseek-coder-6.7b-instruct.Q6_K.gguf"),
+    // File("test/deepseek-coder-6.7b-instruct.Q6_K.gguf"),
+    File("test/phi-3-mini-4k-instruct-q_4.gguf"),
   );
 
   // Print metadata from file
