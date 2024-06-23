@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:file_metadata/src/util/dos_date_time.dart';
+import 'package:file_metadata/src/zip/compression_method.dart';
+
 import 'zip_file_metadata.dart';
 import 'package:path/path.dart';
 
@@ -17,6 +20,10 @@ class ZipMetadata extends FileMetadataBase {
   /// The reason we use the digits in reverse order is because we check for these bytes from the end of file(?).
   /// Therefore, the bytes that we obtain are also reversed.
   static const int _eocdMarker = 0x06054B50;
+
+  /// The Start of Central Directory marker.
+  ///
+  /// This is actually
 
   @override
   Future<ZipFileMetadata> getMetadataFromFile() async {
@@ -54,6 +61,73 @@ class ZipMetadata extends FileMetadataBase {
 
       await file.setPosition(eocdOffset);
 
+      // EoCD Signature
+      Uint8List eocdSig = await file.read(4);
+
+      // Disk Index
+      int diskIndex = (await file.read(2)).buffer.asUint16List().single;
+
+      // Disk ID of start of central directory
+      int startOfCdDiskIndex =
+          (await file.read(2)).buffer.asUint16List().single;
+
+      // Central directory record count on disk
+      int cdRecordCount = (await file.read(2)).buffer.asUint16List().single;
+
+      // Total Count of Central Directories
+      int cdRecordCountTotal =
+          (await file.read(2)).buffer.asUint16List().single;
+
+      // Size of central directory (bytes)
+      int cdSize = (await file.read(4)).buffer.asUint32List().single;
+
+      // Offset to start of central directory
+      int startOfCdOffset = (await file.read(4)).buffer.asUint32List().single;
+
+      // Comment Size
+      int commentSize = (await file.read(2)).buffer.asUint16List().single;
+
+      // Comment
+      // Stored as Uint8List as it can contain further metadata and thus may need to be processed further
+      Uint8List eocdComment = await file.read(commentSize);
+
+      // Check if End of Central Directory is available on this disk
+      if (diskIndex != startOfCdDiskIndex) {
+        throw EocdNotOnDisk(diskIndex, startOfCdDiskIndex);
+      }
+
+      await file.setPosition(startOfCdOffset);
+
+      print(file.positionSync().hex);
+
+      // SoCD signature
+      Uint8List socdSig = await file.read(4);
+
+      // Version made by
+      int creatorVersion = (await file.read(2)).buffer.asUint16List().single;
+
+      // Minimum version required for extraction
+      int minVersion = (await file.read(2)).buffer.asUint16List().single;
+
+      // Bit Flags
+      // Storing as int as that allows for XOR and other operations
+      int flags = (await file.read(2)).buffer.asUint16List().single;
+
+      // Compression method
+      CompressionMethod compressionMethod = CompressionMethod.fromId(
+        (await file.read(2)).buffer.asUint16List().single,
+      );
+
+      // DateTime is computed in parts from an MS-DOS format
+      // Docs: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-dosdatetimetofiletime?redirectedfrom=MSDN
+      // Last Modification Time (MS DOS)
+      int time = (await file.read(2)).buffer.asUint16List().single;
+      int date = (await file.read(2)).buffer.asUint16List().single;
+
+      DateTime lastModification = DosDateTime.fromInt(date, time);
+
+      print(lastModification);
+
       return ZipFileMetadata();
     } finally {
       await file.close();
@@ -64,4 +138,18 @@ class ZipMetadata extends FileMetadataBase {
   ZipFilenameMetadata getMetadataFromPath() => ZipFilenameMetadata(
         basename(super.file.path),
       );
+}
+
+class EocdNotOnDisk implements Exception {
+  /// The index of the disk that this exception was thrown from.
+  final int currentDiskIndex;
+
+  /// The index of the disk where the Start of Central Directory exists
+  final int expectedDiskIndex;
+
+  const EocdNotOnDisk(this.currentDiskIndex, this.expectedDiskIndex);
+}
+
+extension Hex on int {
+  String get hex => toRadixString(16);
 }
