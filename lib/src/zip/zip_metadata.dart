@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_metadata/src/util/dos_date_time.dart';
+import 'package:file_metadata/src/zip/central_directory.dart';
 import 'package:file_metadata/src/zip/compression_method.dart';
 
 import 'zip_file_metadata.dart';
@@ -57,7 +59,7 @@ class ZipMetadata extends FileMetadataBase {
         throw Exception("No EoCD marker found!");
       }
       // We've found the offset
-      print(eocdOffset.toRadixString(16));
+      // print(eocdOffset.toRadixString(16));
 
       await file.setPosition(eocdOffset);
 
@@ -89,7 +91,7 @@ class ZipMetadata extends FileMetadataBase {
 
       // Comment
       // Stored as Uint8List as it can contain further metadata and thus may need to be processed further
-      Uint8List eocdComment = await file.read(commentSize);
+      String eocdComment = utf8.decode(await file.read(commentSize));
 
       // Check if End of Central Directory is available on this disk
       if (diskIndex != startOfCdDiskIndex) {
@@ -98,37 +100,105 @@ class ZipMetadata extends FileMetadataBase {
 
       await file.setPosition(startOfCdOffset);
 
-      print(file.positionSync().hex);
+      // print(file.positionSync().hex);
 
-      // SoCD signature
-      Uint8List socdSig = await file.read(4);
+      List<CentralDirectory> centralDirectories = [];
 
-      // Version made by
-      int creatorVersion = (await file.read(2)).buffer.asUint16List().single;
+      for (int i = 0; i < cdRecordCount; i++) {
+        // SoCD signature
+        Uint8List socdSig = await file.read(4);
 
-      // Minimum version required for extraction
-      int minVersion = (await file.read(2)).buffer.asUint16List().single;
+        // Version made by
+        int creatorVersion = (await file.read(2)).buffer.asUint16List().single;
 
-      // Bit Flags
-      // Storing as int as that allows for XOR and other operations
-      int flags = (await file.read(2)).buffer.asUint16List().single;
+        // Minimum version required for extraction
+        int minVersion = (await file.read(2)).buffer.asUint16List().single;
 
-      // Compression method
-      CompressionMethod compressionMethod = CompressionMethod.fromId(
-        (await file.read(2)).buffer.asUint16List().single,
+        // Bit Flags
+        // Storing as int as that allows for XOR and other operations
+        int flags = (await file.read(2)).buffer.asUint16List().single;
+
+        // Compression method
+        CompressionMethod compressionMethod = CompressionMethod.fromId(
+          (await file.read(2)).buffer.asUint16List().single,
+        );
+
+        // DateTime is computed in parts from an MS-DOS format
+        // Docs: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-dosdatetimetofiletime?redirectedfrom=MSDN
+        // Last Modification Time (MS DOS)
+        int time = (await file.read(2)).buffer.asUint16List().single;
+        int date = (await file.read(2)).buffer.asUint16List().single;
+
+        DateTime lastModification = DosDateTime.fromInt(date, time);
+
+        // print(lastModification);
+
+        Uint8List crc32 = await file.read(4);
+
+        int compressedSize = (await file.read(4)).buffer.asUint32List().single;
+
+        int uncompressedSize =
+            (await file.read(4)).buffer.asUint32List().single;
+
+        int fileNameLength = (await file.read(2)).buffer.asUint16List().single;
+
+        int extraFieldLength =
+            (await file.read(2)).buffer.asUint16List().single;
+
+        int fileCommentLength =
+            (await file.read(2)).buffer.asUint16List().single;
+
+        int diskIndexofFileStart =
+            (await file.read(2)).buffer.asUint16List().single;
+
+        Uint8List internalFileAttributes = await file.read(2);
+
+        Uint8List externalFileAttributes = await file.read(4);
+
+        int localFileHeaderOffset =
+            (await file.read(4)).buffer.asUint32List().single;
+
+        String filename = utf8.decode(await file.read(fileNameLength));
+
+        Uint8List extraField = await file.read(extraFieldLength);
+
+        String fileComment = utf8.decode(await file.read(fileCommentLength));
+
+        // print("File: $filename");
+
+        centralDirectories.add(CentralDirectory(
+          socdSig,
+          creatorVersion,
+          minVersion,
+          flags,
+          compressionMethod,
+          lastModification,
+          crc32,
+          compressedSize,
+          uncompressedSize,
+          filename,
+          extraField,
+          fileComment,
+          internalFileAttributes,
+          externalFileAttributes,
+          localFileHeaderOffset,
+          diskIndexofFileStart,
+        ));
+
+        // TODO: Look into the feasablity of having a field for the local file headers
+        // The data there isn't realy needed as the central headers contain all of the metadata needed to identify and read the files.
+        // On the other hand, it is metadata that we are not reading and skipping over.
+      }
+
+      return ZipFileMetadata(
+        eocdSig,
+        diskIndex,
+        startOfCdDiskIndex,
+        cdRecordCount,
+        cdRecordCountTotal,
+        eocdComment,
+        centralDirectories,
       );
-
-      // DateTime is computed in parts from an MS-DOS format
-      // Docs: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-dosdatetimetofiletime?redirectedfrom=MSDN
-      // Last Modification Time (MS DOS)
-      int time = (await file.read(2)).buffer.asUint16List().single;
-      int date = (await file.read(2)).buffer.asUint16List().single;
-
-      DateTime lastModification = DosDateTime.fromInt(date, time);
-
-      print(lastModification);
-
-      return ZipFileMetadata();
     } finally {
       await file.close();
     }
