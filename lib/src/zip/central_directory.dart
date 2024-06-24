@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:file_metadata/src/zip/compression_method.dart';
 
+import 'extra_field.dart';
+
 class CentralDirectory {
   final Uint8List signature;
   // TODO: Parse into proper enum/whatever to allow for comparision and other stuff
@@ -16,7 +18,8 @@ class CentralDirectory {
   final int compressedSize;
   final int uncompressedSize;
   final String fileName;
-  final Uint8List extraField;
+  // final Uint8List extraField;
+  final List<ExtraField> extraFields;
   final String fileComment;
   final Uint8List internalFileAttributes;
   final Uint8List externalFileAttributes;
@@ -37,7 +40,7 @@ class CentralDirectory {
     this.compressedSize,
     this.uncompressedSize,
     this.fileName,
-    this.extraField,
+    this.extraFields,
     this.fileComment,
     this.internalFileAttributes,
     this.externalFileAttributes,

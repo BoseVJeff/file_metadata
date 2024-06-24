@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:file_metadata/src/util/dos_date_time.dart';
 import 'package:file_metadata/src/zip/central_directory.dart';
 import 'package:file_metadata/src/zip/compression_method.dart';
+import 'package:file_metadata/src/zip/extra_field.dart';
 
 import 'zip_file_metadata.dart';
 import 'package:path/path.dart';
@@ -34,13 +36,15 @@ class ZipMetadata extends FileMetadataBase {
     try {
       // Finding End of Central Directory (EoCD)
 
-      // The offset is max comment length + param size away from end of file
-      const int maxEocdOffset = 0xffff + 22;
-      // const int maxEocdOffset = 22;
       // File length
       final int fileLength = await file.length();
+      // The offset is max comment length + param size away from end of file
+      // Using the min here to ensure that the offset does not go beyond the start of the file.
+      //  This is needed for files that may be shorter than `0xffff+22`.
+      int maxEocdOffset = min(0xffff + 22, fileLength);
+      // const int maxEocdOffset = 22;
       // Since this is a small range, read the entire span into memory and find the marker.
-      await file.setPosition((await file.length()) - maxEocdOffset);
+      await file.setPosition(fileLength - maxEocdOffset);
       Uint8List bytes = await file.read(maxEocdOffset);
       int eocdOffset = -1;
       // Read backwards for marker
@@ -161,6 +165,7 @@ class ZipMetadata extends FileMetadataBase {
         String filename = utf8.decode(await file.read(fileNameLength));
 
         Uint8List extraField = await file.read(extraFieldLength);
+        List<ExtraField> extraFields = ExtraField.fieldsFromBytes(extraField);
 
         String fileComment = utf8.decode(await file.read(fileCommentLength));
 
@@ -177,7 +182,7 @@ class ZipMetadata extends FileMetadataBase {
           compressedSize,
           uncompressedSize,
           filename,
-          extraField,
+          extraFields,
           fileComment,
           internalFileAttributes,
           externalFileAttributes,
