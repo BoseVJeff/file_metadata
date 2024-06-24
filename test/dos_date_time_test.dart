@@ -24,12 +24,12 @@ void main() {
       int status = DosDateTimeToFileTime(date, time, fileTime);
 
       if (status == 0) {
-        print("Error!");
+        throw Exception("Failed to convert to FileTime!");
       } else {
         status = FileTimeToSystemTime(fileTime, systemTime);
 
         if (status == 0) {
-          print("Error!");
+          throw Exception("Failed to convert to SystemTime!");
         } else {
           SYSTEMTIME t = systemTime.ref;
           win32DateTime = DateTime(
@@ -41,7 +41,7 @@ void main() {
             t.wSecond,
             t.wMilliseconds,
           );
-          print(win32DateTime);
+          // print(win32DateTime);
         }
       }
     } finally {
@@ -50,7 +50,7 @@ void main() {
     }
 
     DateTime dartDateTime = DosDateTime.fromInt(date, time);
-    print(dartDateTime);
+    // print(dartDateTime);
 
     expect(dartDateTime, equals(win32DateTime));
   });
