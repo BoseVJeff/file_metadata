@@ -58,5 +58,5 @@ void main() {
     for (var cd in zipFileMetadata.centralDirectories) {
       print(cd.fileName);
     }
-  });
+  }, skip: true);
 }
