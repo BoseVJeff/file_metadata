@@ -15,6 +15,8 @@ import 'zip_filename_metadata.dart';
 
 import '../file_metadata_base.dart';
 
+// Parsing logic taken from https://medium.com/@felixstridsberg/the-zip-file-format-6c8a160d1c34
+// Actual docs @ https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
 class ZipMetadata extends FileMetadataBase {
   ZipMetadata(super.file);
 
