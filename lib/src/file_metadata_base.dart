@@ -59,4 +59,6 @@ abstract class FilenameMetadata {
   String get fileExtension => throw UnimplementedError();
 }
 
-abstract class FileDataMetadata {}
+abstract class FileDataMetadata {
+  const FileDataMetadata();
+}
