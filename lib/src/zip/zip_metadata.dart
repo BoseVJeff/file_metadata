@@ -27,9 +27,48 @@ class ZipMetadata extends FileMetadataBase {
   /// Therefore, the bytes that we obtain are also reversed.
   static const int _eocdMarker = 0x06054B50;
 
-  /// The Start of Central Directory marker.
-  ///
-  /// This is actually
+  @override
+  // TODO: implement formatname
+  String get formatname => "Zip Archive";
+
+  @override
+  Future<bool> isFileValid() async {
+    RandomAccessFile file = await super.file.open(mode: FileMode.read);
+
+    try {
+      // Finding End of Central Directory (EoCD)
+
+      // File length
+      final int fileLength = await file.length();
+      // The offset is max comment length + param size away from end of file
+      // Using the min here to ensure that the offset does not go beyond the start of the file.
+      //  This is needed for files that may be shorter than `0xffff+22`.
+      int maxEocdOffset = min(0xffff + 22, fileLength);
+      // const int maxEocdOffset = 22;
+      // Since this is a small range, read the entire span into memory and find the marker.
+      await file.setPosition(fileLength - maxEocdOffset);
+      Uint8List bytes = await file.read(maxEocdOffset);
+      int eocdOffset = -1;
+      // Read backwards for marker
+      for (var i = maxEocdOffset - 4; i >= 0; i--) {
+        Uint8List scannedBytes = bytes.sublist(i, i + 4);
+        int mark = scannedBytes.buffer.asUint32List().first;
+        // print(scannedBytes);
+        if (mark == _eocdMarker) {
+          eocdOffset = fileLength - maxEocdOffset + i;
+          break;
+        }
+      }
+      if (eocdOffset == -1) {
+        // Offset not found, file is not a valid ZIP file
+        return false;
+      } else {
+        return true;
+      }
+    } finally {
+      await file.close();
+    }
+  }
 
   @override
   Future<ZipFileMetadata> getMetadataFromFile() async {

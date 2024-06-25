@@ -23,6 +23,23 @@ class GgufMetadata extends FileMetadataBase {
   );
 
   @override
+  // TODO: implement formatname
+  String get formatname => "GGUF";
+
+  static Uint8List sig = Uint8List.fromList([0x47, 0x47, 0x55, 0x46]);
+
+  @override
+  Future<bool> isFileValid() async {
+    RandomAccessFile file = await super.file.open(mode: FileMode.read);
+    try {
+      Uint8List bytes = await file.read(4);
+      return bytes == sig;
+    } finally {
+      await file.close();
+    }
+  }
+
+  @override
   GgufFilenameMetdata getMetadataFromPath() {
     String filename = basename(file.path);
     final RegExpMatch? match = fileRegex.firstMatch(filename);
