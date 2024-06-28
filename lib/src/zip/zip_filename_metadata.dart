@@ -21,10 +21,8 @@ class ZipFilenameMetadata implements FilenameMetadata {
   }
 
   @override
-  // TODO: implement fileName
   String get fileName => _parts().$1;
 
   @override
-  // TODO: implement fileExtension
   String get fileExtension => _parts().$2;
 }

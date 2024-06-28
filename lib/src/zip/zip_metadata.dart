@@ -28,7 +28,6 @@ class ZipMetadata extends FileMetadataBase {
   static const int _eocdMarker = 0x06054B50;
 
   @override
-  // TODO: implement formatname
   String get formatname => "Zip Archive";
 
   @override

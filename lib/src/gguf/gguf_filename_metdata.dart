@@ -7,6 +7,7 @@ class GgufFilenameMetdata implements FilenameMetadata {
   /// Model Name as infered from filename.
   ///
   /// This is an empty string of no model can be infered.
+  /// You may want to use the [fileName] instead if that is the case.
   final String modelName;
 
   /// Major model version.
@@ -67,9 +68,15 @@ class GgufFilenameMetdata implements FilenameMetadata {
   /// Note that this property must only be accessed AFTER calling [GgmlMetadata.parseFilename].
   String get version => "v$majorVersion.$minorVersion";
 
+  /// The extension of the file.
+  ///
+  /// This always returns the string `gguf`.
   @override
   String get fileExtension => "gguf";
 
+  /// The name of the model file.
+  ///
+  /// This does not include the extension.
   @override
   String get fileName {
     List<String> parts = _fullFilename.split(".");
