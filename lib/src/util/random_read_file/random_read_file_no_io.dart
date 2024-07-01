@@ -44,4 +44,9 @@ class RandomReadFile implements RandomReadFileBase {
 
   @override
   String get path => "";
+
+  @override
+  Future<int> length() async {
+    return _bytes.length;
+  }
 }

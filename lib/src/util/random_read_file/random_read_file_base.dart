@@ -9,5 +9,7 @@ abstract interface class RandomReadFileBase {
 
   Future<Uint8List> read(int count);
 
+  Future<int> length();
+
   String get path;
 }

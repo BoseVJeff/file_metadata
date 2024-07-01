@@ -70,4 +70,15 @@ class RandomReadFile implements RandomReadFileBase {
 
   @override
   String get path => _randomAccessFile?.path ?? "";
+
+  @override
+  Future<int> length() async {
+    if (_randomAccessFile != null) {
+      return await _randomAccessFile.length();
+    } else if (_bytes != null) {
+      return _bytes.length;
+    } else {
+      throw Exception("No valid backing data found!");
+    }
+  }
 }
