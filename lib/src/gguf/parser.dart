@@ -1,53 +1,54 @@
 import 'dart:convert';
-import 'dart:io';
+
+import 'package:file_metadata/src/util/random_read_file.dart';
 
 import 'gguf_metadata_value_types.dart';
 
 class Parser {
   const Parser._();
 
-  static Future<int> getUint8Value(RandomAccessFile file) async =>
+  static Future<int> getUint8Value(RandomReadFile file) async =>
       (await file.read(1)).buffer.asUint8List().first;
 
-  static Future<int> getInt8Value(RandomAccessFile file) async =>
+  static Future<int> getInt8Value(RandomReadFile file) async =>
       (await file.read(1)).buffer.asUint8List().first;
 
-  static Future<int> getUint16Value(RandomAccessFile file) async =>
+  static Future<int> getUint16Value(RandomReadFile file) async =>
       (await file.read(2)).buffer.asUint16List().first;
 
-  static Future<int> getInt16Value(RandomAccessFile file) async =>
+  static Future<int> getInt16Value(RandomReadFile file) async =>
       (await file.read(2)).buffer.asInt16List().first;
 
-  static Future<int> getUint32Value(RandomAccessFile file) async =>
+  static Future<int> getUint32Value(RandomReadFile file) async =>
       (await file.read(4)).buffer.asUint32List().first;
 
-  static Future<int> getInt32Value(RandomAccessFile file) async =>
+  static Future<int> getInt32Value(RandomReadFile file) async =>
       (await file.read(4)).buffer.asInt32List().first;
 
-  static Future<int> getUint64Value(RandomAccessFile file) async =>
+  static Future<int> getUint64Value(RandomReadFile file) async =>
       (await file.read(8)).buffer.asUint64List().first;
 
-  static Future<int> getInt64Value(RandomAccessFile file) async =>
+  static Future<int> getInt64Value(RandomReadFile file) async =>
       (await file.read(8)).buffer.asInt64List().first;
 
-  static Future<double> getFloat32Value(RandomAccessFile file) async =>
+  static Future<double> getFloat32Value(RandomReadFile file) async =>
       (await file.read(4)).buffer.asFloat32List().first;
 
-  static Future<double> getFloat64Value(RandomAccessFile file) async =>
+  static Future<double> getFloat64Value(RandomReadFile file) async =>
       (await file.read(8)).buffer.asFloat64List().first;
 
-  static Future<bool> getBooleanValue(RandomAccessFile file) async {
+  static Future<bool> getBooleanValue(RandomReadFile file) async {
     int tmpVal = (await file.read(1)).buffer.asUint8List().first;
     assert(tmpVal == 0 || tmpVal == 1);
     return tmpVal == 1;
   }
 
-  static Future<String> getUtf8String(RandomAccessFile file) async {
+  static Future<String> getUtf8String(RandomReadFile file) async {
     int length = (await file.read(8)).buffer.asUint64List().first;
     return utf8.decode(await file.read(length));
   }
 
-  static Future<List<Object>> getArray(RandomAccessFile file) async {
+  static Future<List<Object>> getArray(RandomReadFile file) async {
     final List<Object> arr = [];
 
     int typeId = (await file.read(4)).buffer.asUint32List().first;

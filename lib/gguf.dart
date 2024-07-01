@@ -1,4 +1,2 @@
-export 'src/gguf/gguf_metadata.dart' show GgufMetadata;
-export 'src/gguf/gguf_filename_metdata.dart' show GgufFilenameMetdata;
-export 'src/gguf/gguf_file_metadata.dart' show GgufFileMetadata, Tensor;
-export 'src/gguf/file_type.dart';
+export 'src/gguf/gguf_name_metadata.dart';
+export 'src/gguf/gguf_file_metadata.dart';
