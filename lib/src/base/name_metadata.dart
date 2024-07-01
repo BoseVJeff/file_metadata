@@ -1,6 +1,6 @@
 import '../util/random_read_file.dart';
 
-abstract class NameMetadata {
+abstract interface class NameMetadata {
   final String filename;
 
   final String extension;

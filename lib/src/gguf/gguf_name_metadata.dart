@@ -3,10 +3,10 @@ import 'package:path/path.dart' as p;
 import '../base/name_metadata.dart';
 import '../util/random_read_file.dart';
 
-class GgufNameMetadata extends NameMetadata {
+class GgufNameMetadata implements NameMetadata {
   const GgufNameMetadata(
-    super.filename,
-    super.extension, {
+    this.filename,
+    this.extension, {
     this.modelName,
     this.majorVersion,
     this.minorVersion,
@@ -24,6 +24,18 @@ class GgufNameMetadata extends NameMetadata {
     r"^(?<model_name>[A-Za-z0-9\s-]+)(?:-v(?<major>\d+)\.(?<minor>\d+))?-(?:(?<experts_count>\d+)x)?(?<parameters>\d+[A-Za-z]?)-(?<encoding_scheme>[\w_]+)(?:-(?<shard>\d{5})-of-(?<shardTotal>\d{5}))?\.gguf$",
     multiLine: false,
   );
+
+  /// The name of the file.
+  ///
+  /// This does not include the file extension.
+  @override
+  final String filename;
+
+  /// The file extension.
+  ///
+  /// This will, for most files, be some variant of the string `gguf`.
+  @override
+  final String extension;
 
   /// Model Name as infered from filename.
   ///
