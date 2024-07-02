@@ -68,11 +68,22 @@ class GgufFileMetadata implements FileMetadata {
     this.tensors = const [],
   });
 
+  static Future<bool> isValidFile(RandomReadFile file) async {
+    try {
+      String headerString = await file.readUtf8String(4);
+      return headerString == "GGUF";
+    } on Exception catch (_) {
+      return false;
+    }
+  }
+
   static Future<GgufFileMetadata> fromFile(
     RandomReadFile file,
   ) async {
     // Using a reusable variable to reduce memory useage
     Uint8List bytes;
+    // Setting initial position to start of file
+    await file.setPosition(0);
     try {
       // Getting and setting the magic bytes
       bytes = await file.read(4);
@@ -198,8 +209,6 @@ class GgufFileMetadata implements FileMetadata {
     } on UnknownGgmlMetadataValueType catch (e) {
       print("Unknown type: ${e.id}");
       rethrow;
-    } finally {
-      file.close();
     }
   }
 }

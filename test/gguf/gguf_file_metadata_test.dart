@@ -7,14 +7,18 @@ import 'package:test/test.dart';
 
 void main() {
   group('Phi 3', () {
+    late RandomReadFile randomReadFile;
     late GgufFileMetadata metadata;
 
     setUpAll(() async {
-      metadata = await GgufFileMetadata.fromFile(
-        await RandomReadFile.fromFile(
-          File("test/phi-3-mini-4k-instruct-q_4.gguf"),
-        ),
+      randomReadFile = await RandomReadFile.fromFile(
+        File("test/phi-3-mini-4k-instruct-q_4.gguf"),
       );
+      metadata = await GgufFileMetadata.fromFile(randomReadFile);
+    });
+
+    tearDownAll(() async {
+      await randomReadFile.close();
     });
 
     test('Magic String', () {
