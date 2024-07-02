@@ -6,17 +6,18 @@ import 'random_read_file_base.dart';
 class RandomReadFile implements RandomReadFileBase {
   final RandomAccessFile? _randomAccessFile;
   final Uint8List? _bytes;
+  final String _filename;
   int _idx = 0;
 
-  RandomReadFile._(this._randomAccessFile, this._bytes);
+  RandomReadFile._(this._randomAccessFile, this._bytes, [this._filename = ""]);
 
   static Future<RandomReadFile> fromFile(File file) async {
     RandomAccessFile randomFile = await file.open(mode: FileMode.read);
     return RandomReadFile._(randomFile, null);
   }
 
-  static RandomReadFile fromBytes(Uint8List bytes) {
-    return RandomReadFile._(null, bytes);
+  static RandomReadFile fromBytes(Uint8List bytes, [String filename = ""]) {
+    return RandomReadFile._(null, bytes, filename);
   }
 
   @override
@@ -80,7 +81,7 @@ class RandomReadFile implements RandomReadFileBase {
   }
 
   @override
-  String get path => _randomAccessFile?.path ?? "";
+  String get path => _randomAccessFile?.path ?? _filename;
 
   @override
   Future<int> length() async {

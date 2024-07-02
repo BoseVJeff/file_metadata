@@ -4,18 +4,20 @@ import 'random_read_file_base.dart';
 
 class RandomReadFile implements RandomReadFileBase {
   final Uint8List _bytes;
+  final String _filename;
   int _idx = 0;
 
-  RandomReadFile._(this._bytes);
+  RandomReadFile._(this._bytes, [this._filename = ""]);
 
+  // TODO: In the long term, look into supporting the filesystem API on the web.
   static Future<RandomReadFile> fromFile(_) async {
     throw UnimplementedError(
       "Importing from file is not supported on this platform!",
     );
   }
 
-  static RandomReadFile fromBytes(Uint8List bytes) {
-    return RandomReadFile._(bytes);
+  static RandomReadFile fromBytes(Uint8List bytes, [String filename = ""]) {
+    return RandomReadFile._(bytes, filename);
   }
 
   @override
@@ -48,7 +50,7 @@ class RandomReadFile implements RandomReadFileBase {
   }
 
   @override
-  String get path => "";
+  String get path => _filename;
 
   @override
   Future<int> length() async {

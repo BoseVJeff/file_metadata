@@ -31,6 +31,6 @@ abstract interface class RandomReadFileBase {
 
   /// Path of the file that the data is being read from.
   ///
-  /// If this class is constructed using raw bytes, then this will return an empty string.
+  /// If this class is constructed using raw bytes and does not have a filename assigned in the constructor, then this will return an empty string.
   String get path;
 }
