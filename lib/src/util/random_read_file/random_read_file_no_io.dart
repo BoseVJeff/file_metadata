@@ -9,10 +9,19 @@ class RandomReadFile implements RandomReadFileBase {
 
   RandomReadFile._(this._bytes, [this._filename = ""]);
 
-  // TODO: In the long term, look into supporting the filesystem API on the web.
+  @Deprecated("Prefer using `fromPath` instead")
   static Future<RandomReadFile> fromFile(_) async {
     throw UnimplementedError(
       "Importing from file is not supported on this platform!",
+    );
+  }
+
+  // TODO: In the long term, look into supporting the filesystem API on the web.
+  // Note that this might require a *very* hard dependency on `dart:js_interop` and others.
+  // Prefer figuring out a check for JS availablity *before* doing so.
+  static Future<RandomReadFile> fromPath(String path) async {
+    throw UnimplementedError(
+      "Importing from path is not supported on this platform!",
     );
   }
 

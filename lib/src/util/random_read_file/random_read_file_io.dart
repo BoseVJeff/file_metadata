@@ -11,9 +11,16 @@ class RandomReadFile implements RandomReadFileBase {
 
   RandomReadFile._(this._randomAccessFile, this._bytes, [this._filename = ""]);
 
+  @Deprecated("Prefer using `fromPath` instead")
   static Future<RandomReadFile> fromFile(File file) async {
     RandomAccessFile randomFile = await file.open(mode: FileMode.read);
     return RandomReadFile._(randomFile, null);
+  }
+
+  static Future<RandomReadFile> fromPath(String path) async {
+    RandomAccessFile randomAccessFile =
+        await File(path).open(mode: FileMode.read);
+    return RandomReadFile._(randomAccessFile, null);
   }
 
   static RandomReadFile fromBytes(Uint8List bytes, [String filename = ""]) {
