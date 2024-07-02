@@ -8,13 +8,15 @@ void main() {
   group('Basic', () {
     // Test file taken from https://github.com/remme123/zip_parser/blob/07d89a38b23c4acdea8e5b117e64e32fa19abf1f/test.zip
     // Corresponding crate @ https://docs.rs/zip_parser/latest/zip_parser/index.html
+    late RandomReadFile file;
     late ZipFileMetadata metadata;
     setUpAll(() async {
-      metadata = await ZipFileMetadata.fromFile(
-        await RandomReadFile.fromFile(
-          File("test/test.zip"),
-        ),
-      );
+      file = await RandomReadFile.fromFile(File("test/test.zip"));
+      metadata = await ZipFileMetadata.fromFile(file);
+    });
+
+    tearDownAll(() async {
+      await file.close();
     });
 
     test('Disk Index', () {
