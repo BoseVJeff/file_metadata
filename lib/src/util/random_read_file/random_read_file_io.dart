@@ -44,6 +44,17 @@ class RandomReadFile implements RandomReadFileBase {
   }
 
   @override
+  int positionSync() {
+    if (_randomAccessFile != null) {
+      return _randomAccessFile.positionSync();
+    } else if (_bytes != null) {
+      return _idx;
+    } else {
+      throw Exception("No valid backing data found!");
+    }
+  }
+
+  @override
   Future<Uint8List> read(int count) async {
     Uint8List bytes;
     if (_randomAccessFile != null) {

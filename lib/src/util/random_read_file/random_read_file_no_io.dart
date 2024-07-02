@@ -30,6 +30,11 @@ class RandomReadFile implements RandomReadFileBase {
   }
 
   @override
+  int positionSync() {
+    return _idx;
+  }
+
+  @override
   Future<Uint8List> read(int count) async {
     Uint8List bytes;
     bytes = _bytes.sublist(_idx, _idx + count);
