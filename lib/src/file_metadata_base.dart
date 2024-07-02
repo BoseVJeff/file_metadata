@@ -33,6 +33,11 @@ class FileNameMetadataBase implements NameMetadata {
   }
 }
 
+/// The entrypoint to getting a file's metadata.
+///
+/// Consider using this class if you don't know or care about what kind of data your file contains.
+///
+/// If you do know what type your file is, using the class corresponding to the type may be more useful.
 class FileMetadataBase implements FileMetadata {
   final RandomReadFile file;
 
@@ -42,11 +47,18 @@ class FileMetadataBase implements FileMetadata {
   @override
   Uint8List get magicBytes => Uint8List(0);
 
+  /// Get all possible metadata from the file.
+  ///
+  /// This returns a list of all possible metadata classes that could be read from this file.
+  ///
+  /// To parse the data obtained from this method, consider using `list[i] is ZipFileMetadata` or something similar to check what type the metadata is.
+  /// Then, promote/cast the object to the appropriate type (`list[i] as ZipFileMetadata`) to use it further.
   Future<List<FileMetadata>> getAllMetadata() async {
     // A list of all possible metadata.
     // Most metadata classes will have an static `isValid` method that will perform a quick, but incomplete check if the file can be parsed (usually by checking file header only).
     // Prefer calling that as it will allow you to fail fast in case of invalid file formats.
     // This is important as, by design, you will call multiple parsers in this method and expect most to fail.
+    // Note that under NO circumstance should this method throw. It is preferable to return an empty list rather than throw an exception.
     List<FileMetadata> list = [];
 
     // Most file formats require a specific header (GGUF, exe, etc).
