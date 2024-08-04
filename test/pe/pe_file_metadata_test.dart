@@ -107,6 +107,34 @@ void main() async {
       expect(metadata.imageDosHeaderEndOffset, equals(0x40));
     });
 
+    test('Rich DOS Headers', () {
+      // We're testing the parsed headers only as that verifies both the raw data retrival and the parsing
+      expect(
+        metadata.parsedRichHeaders,
+        [
+          "30729.147.10",
+          "33218.261.29",
+          "33218.260.10",
+          "33218.259.3",
+          "33218.257.6",
+          "31937.257.2",
+          "30795.257.13",
+          "0.1.154",
+          "33523.261.9",
+          "33523.255.1",
+          "0.151.1",
+          "33523.258.1",
+        ],
+      );
+    });
+
+    test('Rich Checksum', () {
+      expect(
+        metadata.checksum,
+        equals(Uint8List.fromList([0xe1, 0xd7, 0x1a, 0xb4])),
+      );
+    });
+
     tearDownAll(() async {
       await file.close();
     });

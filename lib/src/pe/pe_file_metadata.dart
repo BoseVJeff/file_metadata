@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:file_metadata/src/util/byte_xor.dart';
+
 import '../util/random_read_file.dart';
 
 import '../base/file_metadata.dart';
@@ -11,6 +13,9 @@ class ImageDosHeader implements FileMetadata {
   // Ref: Blog series @ https://0xrick.github.io/win-internals/pe1/
   @override
   Uint8List get magicBytes => Uint8List.fromList([0x5A, 0x4D]);
+
+  static final Uint8List dansRichHeader =
+      Uint8List.fromList([0x44, 0x61, 0x6e, 0x53]);
 
   // MZ
   static const int dosHeaderBytes = 0x4D5A;
@@ -152,6 +157,28 @@ class ImageDosHeader implements FileMetadata {
   /// Refer to https://securelist.com/the-devils-in-the-rich-header/84348/ for an unusual example of how the data stored in these headers can be used.
   final int imageDosHeaderEndOffset;
 
+  /// The file offset, from the start of the file, where the rich headers begin.
+  final int richHeaderOffset;
+
+  /// These are the raw rich headers for the file.
+  ///
+  /// To get the parsed values, use [parsedRichHeaders] instead.
+  ///
+  /// Note that the key represents the first four bytes and the values respresent the last four bytes of the headers.
+  final Map<Uint8List, Uint8List> rawRichHeaders;
+
+  /// These are the rich headers available in the file, parsed to return more useable values.
+  ///
+  /// Prefer using these if you want to work with the rich headers.
+  ///
+  /// If you want the raw bytes instead, use [rawRichHeaders] instead.
+  final List<String> parsedRichHeaders;
+
+  /// The checksum for the rich headers.
+  ///
+  /// The raw headers needs to be XOR'd by this checksum to get their actual value.
+  final Uint8List checksum;
+
   const ImageDosHeader(
     this.eMagic,
     this.eCblp,
@@ -173,6 +200,10 @@ class ImageDosHeader implements FileMetadata {
     this.eRes2,
     this.eLfanew,
     this.imageDosHeaderEndOffset,
+    this.richHeaderOffset,
+    this.rawRichHeaders,
+    this.parsedRichHeaders,
+    this.checksum,
   );
 
   static Future<ImageDosHeader> fromFile(RandomReadFile file) async {
@@ -226,6 +257,86 @@ class ImageDosHeader implements FileMetadata {
 
     final int newExeHeaderFileAddr = await file.readUint32();
 
+    final int imageDosHeaderEndOffset = await file.position();
+
+    // Read 4 bytes at a time from newExeHeaderFileAddr, backwards untill we encounter the rich header.
+
+    Map<Uint8List, Uint8List> richHeaders = {};
+
+    // Get the offset of the rich header
+    // Note that this is an optional section of the executable.
+    // We therefore read only untill imageDosHeaderEndOffset, and claim a missing header if it is not found till that point.
+
+    int richHeaderOffset = -1;
+
+    // Set file position to new exe header start
+    await file.setPosition(newExeHeaderFileAddr);
+
+    while ((await file.position()) > imageDosHeaderEndOffset) {
+      int backBytes = (await file.readBackward(4)).buffer.asUint32List().first;
+      if (backBytes == 0x68636952) {
+        // print(await file.position());
+        richHeaderOffset = await file.position();
+        break;
+      }
+    }
+
+    // We've found the rich header.
+    // The next 4 bytes are the rich header, and the 4 bytes after are the checksum.
+    // We'll move past the end there and read backwards from this point on.
+    await file.setPosition((await file.position()) + 8);
+
+    // Reading backwards, the first 4 bytes are the checksum
+
+    Uint8List richChecksum = await file.readBackward(4);
+
+    // The next four bytes are the rich header itself.
+
+    Uint8List richHeader = await file.readBackward(4);
+
+    // From this point on, all values we read need to be XORed with the checksum to get their actual value.
+    // The values will be read unitll the actual value read equals `DanS`.
+    // This logically reads like an infinite loop with a break when `DanS` is encountered, so it'll be implemented as such.
+
+    List<Uint8List> values = [];
+    while (true) {
+      // Reading and XORing at this point to avoid more work later on.
+      Uint8List bytes = (await file.readBackward(4)) ^ richChecksum;
+      // Elements are being inserted in reverse to avoid having to reverse the entire list at once.
+      values.insert(0, bytes);
+      if (bytes.deepEquals(dansRichHeader)) {
+        break;
+      }
+    }
+
+    // The index of the cursor in the [values] list
+    int i = 0;
+
+    // The following increments are seperated for readablity and documentaion purposes.
+    // I'm assuming that the comiler is smart enough to merge them.
+
+    // The first element is always `DanS`.
+    i++;
+
+    // The next three elements are always padding elements.
+    i += 3;
+
+    // All values from this point on are the key-value pairs.
+
+    while (i < values.length) {
+      richHeaders.addAll({values[i]: values[i + 1]});
+      i += 2;
+    }
+
+    // These are the rich headers parsed into a string for easy lookup.
+    List<String> parsedRichHeaders = [];
+
+    for (MapEntry<Uint8List, Uint8List> el in richHeaders.entries) {
+      parsedRichHeaders.add(
+        "${el.key.buffer.asUint16List().join(".")}.${el.value.buffer.asUint32List().single}",
+      );
+    }
+
     return ImageDosHeader(
       headerBytes,
       bytesOnLPage,
@@ -246,7 +357,11 @@ class ImageDosHeader implements FileMetadata {
       oemInfo,
       reserved2,
       newExeHeaderFileAddr,
-      await file.position(),
+      imageDosHeaderEndOffset,
+      richHeaderOffset,
+      richHeaders,
+      parsedRichHeaders,
+      richChecksum,
     );
   }
 }
