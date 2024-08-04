@@ -10,6 +10,20 @@ import 'dart:typed_data';
 import 'random_read_file/random_read_file_no_io.dart'
     if (dart.library.io) 'random_read_file/random_read_file_io.dart';
 
+extension BackwardsRandomRead on RandomReadFile {
+  /// Reads [count] bytes backwards from the current file position.
+  Future<Uint8List> readBackward(int count) async {
+    // Set cursor to start of the size
+    await setPosition((await position()) - count);
+    Uint8List bytes = await read(count);
+    // Set the cursor back to the start of the buffer.
+    // This recreates the behaviour that read provides (of setting the cursor to the end of the read).
+    // Note that we move the cursor back as we are reading in the backwards direction.
+    await setPosition((await position()) - count);
+    return bytes;
+  }
+}
+
 /// Extension method to make reading data from files easier.
 ///
 /// All methods here are focused on converting the data to the appropiate type before returning it, reducing repetitive boilerplate.
