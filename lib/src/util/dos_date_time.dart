@@ -1,6 +1,11 @@
 class DosDateTime {
   const DosDateTime._();
 
+  /// This is usually in the PE File Header
+  static DateTime fromTimestamp(int dateTimeStamp) =>
+      DateTime.fromMillisecondsSinceEpoch(dateTimeStamp * 1000, isUtc: true);
+
+  /// This is usually in the ZIP Central Directory and related places.
   static DateTime fromInt(int date, int time) {
     if (date > 0xffff) {
       throw FormatException("Date should be a max 0xffff", date);
