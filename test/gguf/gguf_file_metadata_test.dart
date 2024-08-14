@@ -11,8 +11,8 @@ void main() {
     late GgufFileMetadata metadata;
 
     setUpAll(() async {
-      randomReadFile = await RandomReadFile.fromFile(
-        File("test/phi-3-mini-4k-instruct-q_4.gguf"),
+      randomReadFile = await RandomReadFile.fromPath(
+      "test/phi-3-mini-4k-instruct-q_4.gguf",
       );
       metadata = await GgufFileMetadata.fromFile(randomReadFile);
     });

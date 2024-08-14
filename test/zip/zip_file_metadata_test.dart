@@ -11,7 +11,7 @@ void main() {
     late RandomReadFile file;
     late ZipFileMetadata metadata;
     setUpAll(() async {
-      file = await RandomReadFile.fromFile(File("test/test.zip"));
+      file = await RandomReadFile.fromPath("test/test.zip");
       metadata = await ZipFileMetadata.fromFile(file);
     });
 
@@ -45,9 +45,7 @@ void main() {
   test('Misc', () async {
     print("Reading ZIP File...");
     ZipFileMetadata metadata = await ZipFileMetadata.fromFile(
-      await RandomReadFile.fromFile(
-        File("test/test.zip"),
-      ),
+      await RandomReadFile.fromPath("test/test.zip"),
     );
     print("Disk ${metadata.currentDiskIndex}");
     if (metadata.currentDiskIndex == metadata.socdDiskIndex) {
