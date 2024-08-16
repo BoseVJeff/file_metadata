@@ -3,6 +3,7 @@
 /// More dartdocs go here.
 library;
 
+export 'common.dart';
 export 'src/file_metadata_base.dart';
 export 'gguf.dart';
 

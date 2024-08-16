@@ -1,4 +1,3 @@
-import 'package:file_metadata/src/util/random_read_file.dart';
 import 'package:file_metadata/zip.dart';
 
 // Note that reading a file is an async operation.
